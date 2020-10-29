@@ -8,6 +8,7 @@ using CoreCodeCamp.Data;
 using CoreCodeCamp.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace CoreCodeCamp.Controllers
 {
@@ -59,11 +60,26 @@ namespace CoreCodeCamp.Controllers
 			{
 				return this.StatusCode(StatusCodes.Status500InternalServerError, "Database failure");
 			}
-
-
 		}
 
+		[HttpGet("search")]
+		public async Task<ActionResult<CampModel[]>> SearchByDate(DateTime theDate, bool includeTalks = false)
+		{
+			try
+			{
+				var results = await _repository.GetAllCampsByEventDate(theDate, includeTalks);
 
+				if (!results.Any())
+				{
+					return this.NotFound();
+				}
 
+				return _mapper.Map<CampModel[]>(results);
+			}
+			catch (Exception)
+			{
+				return this.StatusCode(StatusCodes.Status500InternalServerError, "Database failure");
+			}
+		}
 	}
 }
